@@ -1,0 +1,15 @@
+# Stage 1: ground a natural-language phrase in the current camera frame.
+#
+# A service, not a topic, because grounding runs once per episode -- the camera
+# is fixed and the object is static until we touch it. Request/response also
+# gives the orchestrator a clean place to handle abstention.
+
+string phrase                 # e.g. "the red block"
+bool use_fallback true        # allow escalation to the hosted VLM if the local detector is unsure
+---
+bool found                    # false == abstained; the referent was not confidently located
+geometry_msgs/Point target    # table position, robot base frame, METRES (z = table height)
+float32 confidence
+string source                 # which backend answered: "gdino" | "claude"
+uint16[4] bbox                # x1, y1, x2, y2 in original image pixels; for the debug overlay
+string message                # human-readable reason on failure

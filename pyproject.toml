@@ -1,0 +1,59 @@
+[project]
+name = "so101-vlm-pickplace"
+version = "0.1.0"
+description = "Two-stage language-grounded pick-and-place on a 6-DoF SO-101 arm: VLM grounding + imitation-learned grasp policy"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "Apache-2.0" }
+
+# Kept deliberately thin. The heavy robot/ML stack is an extra so that the
+# geometry + orchestration code can be imported (and tested) on a machine with
+# no arm, no camera and no GPU.
+dependencies = [
+    "numpy>=1.26",
+    "opencv-python>=4.10",
+    "pyzmq>=26.0",
+    "msgpack>=1.0",
+]
+
+[project.optional-dependencies]
+# Grounding backends. Torch is huge; only install when you actually run stage 1.
+grounding = [
+    "torch>=2.10",
+    "torchvision",
+    "transformers>=4.45",
+    "pillow>=10.0",
+]
+# Hosted-VLM fallback backend.
+api = [
+    "anthropic>=0.40",
+]
+# The robot + imitation-learning stack. lerobot >=0.6.0 is required:
+#   - 0.6.0 renamed the real-robot inference entrypoint to `lerobot-rollout`
+#   - module paths are lerobot.robots.so_follower / lerobot.teleoperators.so_leader
+#     (NOT so101_follower / so101_leader -- those are only the CLI type strings)
+robot = [
+    "lerobot[core_scripts,training,feetech]>=0.6.0",
+]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.6",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["so101_pickplace*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

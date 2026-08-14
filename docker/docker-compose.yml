@@ -1,0 +1,32 @@
+# Note there is no `devices:` mapping for the servo adapter, and there cannot be.
+# Docker Desktop on macOS runs the daemon in a Linux VM with no USB passthrough
+# (docker/for-mac#5263, closed won't-fix). The serial bus is owned by a native
+# macOS process and reached over TCP -- see so101_pickplace/control/so101_bridge.py.
+
+services:
+  ros:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      platforms:
+        - linux/arm64
+    image: so101:jazzy
+    container_name: so101_ros
+    stdin_open: true
+    tty: true
+    ports:
+      - "8765:8765"   # foxglove_bridge -- connect Foxglove Studio here
+    volumes:
+      # Calibration and checkpoints are regenerated per machine, so bind-mount
+      # them rather than baking them into the image. Source stays in the image
+      # (VirtioFS bind mounts make colcon builds ~4x slower).
+      - ../calibration:/ws/calibration
+      - ../outputs:/ws/outputs
+    environment:
+      - ROS_DOMAIN_ID=42
+      - SO101_BRIDGE_HOST=host.docker.internal
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: >
+      ros2 launch so101_bringup pickplace.launch.py
+      host:=host.docker.internal

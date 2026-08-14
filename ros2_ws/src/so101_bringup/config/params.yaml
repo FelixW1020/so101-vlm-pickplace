@@ -1,0 +1,41 @@
+# Shared parameters. Override per-launch with ros2 launch args.
+
+/**:
+  ros__parameters:
+    use_sim_time: false
+
+so101_bridge:
+  ros__parameters:
+    # host.docker.internal reaches the macOS host from inside Docker Desktop.
+    # On a Linux box running the driver natively, this whole node goes away --
+    # use feetech_ros2_driver with hardware_type:=real instead.
+    host: "host.docker.internal"
+    rate_hz: 30.0
+
+so101_grounding:
+  ros__parameters:
+    backend: "gdino"
+    # Set to "claude" to escalate when the local detector is unsure. Costs an
+    # API call per escalation, which at one call per episode is negligible.
+    fallback_backend: ""
+    min_confidence: 0.35
+    calibration_path: "calibration/table_homography.npz"
+    camera_topic: "camera/overhead/image_raw"
+
+so101_policy:
+  ros__parameters:
+    checkpoint: ""
+    rate_hz: 30.0
+    # cpu inside the container -- there is no MPS passthrough on Apple Silicon.
+    # For real deployment run the policy natively on the host instead.
+    device: "cpu"
+    passthrough_only: false
+
+so101_orchestrator:
+  ros__parameters:
+    approach_height_mm: 80.0
+    grasp_timeout_s: 15.0
+    # Leave false until a checkpoint exists -- the arm then stops at the
+    # pre-grasp pose, which is exactly what you want for verifying stage 1
+    # and the calibration.
+    policy_enabled: false

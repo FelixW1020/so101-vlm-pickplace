@@ -1,0 +1,17 @@
+# The full task: ground a phrase, approach, grasp, drop in the container.
+#
+# An action rather than a service because the whole sequence takes ~30 s, needs
+# progress feedback, and must be cancellable -- an operator watching the arm
+# descend on empty air needs a stop button.
+
+string phrase                 # what to pick, in natural language
+bool dry_run false            # ground and report only; do not move the arm
+---
+bool success
+string outcome                # matches so101_pickplace.evaluation.Outcome
+float32 grounding_confidence
+float32 duration_s
+---
+string stage                  # "grounding" | "approach" | "grasp" | "retreat" | "place"
+float32 progress              # 0.0 - 1.0
+string detail
